@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Defs_f1fbbece" targetNamespace="http://bpmn.io/schema/bpmn" exporter="disenar-procesos bpmn_tool" exporterVersion="1.0">
+<bpmn:collaboration id="Collab_Process_reembolso_tobe">
+<bpmn:participant id="P_Nubia" name="Nubia SA" processRef="Proc_P_Nubia"/>
+<bpmn:participant id="P_Banco" name="Banco"/>
+<bpmn:messageFlow id="MsgFlow_1" name="Archivo de pagos" sourceRef="T15" targetRef="P_Banco"/>
+<bpmn:textAnnotation id="A1"><bpmn:text>DMN: ruta = INCOMPLETO | FUERA_DE_PLAZO | AUTO | JEFE (hit U, completa C)</bpmn:text></bpmn:textAnnotation>
+<bpmn:association id="A1_as" sourceRef="T21" targetRef="A1"/>
+<bpmn:textAnnotation id="A2"><bpmn:text>Rechazo por plazo solo si &gt; 30 días (política v2019) [A VALIDAR vigencia]</bpmn:text></bpmn:textAnnotation>
+<bpmn:association id="A2_as" sourceRef="E2" targetRef="A2"/>
+</bpmn:collaboration>
+<bpmn:process id="Proc_P_Nubia" name="reembolso de gastos de viaje (to-be)" isExecutable="false">
+<bpmn:laneSet id="P_Nubia_ls">
+<bpmn:lane id="L_emp" name="Empleado"><bpmn:flowNodeRef>S1</bpmn:flowNodeRef><bpmn:flowNodeRef>M1</bpmn:flowNodeRef><bpmn:flowNodeRef>T20</bpmn:flowNodeRef></bpmn:lane>
+<bpmn:lane id="L_sis" name="Sistema de gastos (BPMS)"><bpmn:flowNodeRef>T21</bpmn:flowNodeRef><bpmn:flowNodeRef>G1</bpmn:flowNodeRef><bpmn:flowNodeRef>G1b</bpmn:flowNodeRef><bpmn:flowNodeRef>E2</bpmn:flowNodeRef><bpmn:flowNodeRef>T22</bpmn:flowNodeRef><bpmn:flowNodeRef>G3b</bpmn:flowNodeRef><bpmn:flowNodeRef>M2</bpmn:flowNodeRef><bpmn:flowNodeRef>T06</bpmn:flowNodeRef><bpmn:flowNodeRef>G4</bpmn:flowNodeRef><bpmn:flowNodeRef>M3</bpmn:flowNodeRef><bpmn:flowNodeRef>IE2</bpmn:flowNodeRef><bpmn:flowNodeRef>T15</bpmn:flowNodeRef><bpmn:flowNodeRef>E1</bpmn:flowNodeRef></bpmn:lane>
+<bpmn:lane id="L_jefe" name="Jefe inmediato"><bpmn:flowNodeRef>M5</bpmn:flowNodeRef><bpmn:flowNodeRef>T03</bpmn:flowNodeRef><bpmn:flowNodeRef>B1</bpmn:flowNodeRef><bpmn:flowNodeRef>G3</bpmn:flowNodeRef><bpmn:flowNodeRef>E3</bpmn:flowNodeRef></bpmn:lane>
+<bpmn:lane id="L_df" name="Director financiero"><bpmn:flowNodeRef>T10</bpmn:flowNodeRef></bpmn:lane>
+<bpmn:lane id="L_cxp" name="Cuentas por Pagar"><bpmn:flowNodeRef>T23</bpmn:flowNodeRef></bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="S1" name="Viaje concluido"><bpmn:outgoing>Flow_P_Nubia_1</bpmn:outgoing></bpmn:startEvent>
+<bpmn:exclusiveGateway id="M1" name=""><bpmn:incoming>Flow_P_Nubia_1</bpmn:incoming><bpmn:incoming>Flow_P_Nubia_5</bpmn:incoming><bpmn:incoming>Flow_P_Nubia_14</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_2</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:userTask id="T20" name="Registrar gastos en portal"><bpmn:documentation>Captura en origen: partidas + foto/CFDI de cada comprobante; validaciones en línea</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_2</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_3</bpmn:outgoing><bpmn:dataOutputAssociation id="T20_D1_out"><bpmn:targetRef>D1_ref</bpmn:targetRef></bpmn:dataOutputAssociation><bpmn:dataOutputAssociation id="T20_D2_out"><bpmn:targetRef>D2_ref</bpmn:targetRef></bpmn:dataOutputAssociation></bpmn:userTask>
+<bpmn:businessRuleTask id="T21" name="Validar informe contra política"><bpmn:documentation>DMN &#x27;Ruta del informe&#x27; + &#x27;Tope por partida&#x27; (09-implementacion.md)</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_3</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_4</bpmn:outgoing><bpmn:dataInputAssociation id="T21_D1_in"><bpmn:sourceRef>D1_ref</bpmn:sourceRef></bpmn:dataInputAssociation><bpmn:dataInputAssociation id="T21_D2_in"><bpmn:sourceRef>D2_ref</bpmn:sourceRef></bpmn:dataInputAssociation></bpmn:businessRuleTask>
+<bpmn:exclusiveGateway id="G1" name="¿Informe válido?"><bpmn:incoming>Flow_P_Nubia_4</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_5</bpmn:outgoing><bpmn:outgoing>Flow_P_Nubia_6</bpmn:outgoing><bpmn:outgoing>Flow_P_Nubia_7</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="G1b" name="¿Requiere aprobación del jefe?"><bpmn:incoming>Flow_P_Nubia_7</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_8</bpmn:outgoing><bpmn:outgoing>Flow_P_Nubia_9</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:endEvent id="E2" name="Informe rechazado por plazo"><bpmn:incoming>Flow_P_Nubia_6</bpmn:incoming></bpmn:endEvent>
+<bpmn:exclusiveGateway id="M5" name=""><bpmn:incoming>Flow_P_Nubia_9</bpmn:incoming><bpmn:incoming>Flow_P_Nubia_12</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_10</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:userTask id="T03" name="Aprobar informe de gastos"><bpmn:documentation>Worklist/móvil; SLA 48 h hábiles</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_10</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_13</bpmn:outgoing><bpmn:dataInputAssociation id="T03_D1_in"><bpmn:sourceRef>D1_ref</bpmn:sourceRef></bpmn:dataInputAssociation></bpmn:userTask>
+<bpmn:boundaryEvent id="B1" name="48 h hábiles sin decisión" attachedToRef="T03" cancelActivity="true"><bpmn:outgoing>Flow_P_Nubia_11</bpmn:outgoing><bpmn:timerEventDefinition id="B1_ed"/></bpmn:boundaryEvent>
+<bpmn:sendTask id="T22" name="Escalar aprobación al gerente"><bpmn:documentation>Reasigna el work item al jefe del aprobador y notifica (patrón escalado)</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_11</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_12</bpmn:outgoing></bpmn:sendTask>
+<bpmn:exclusiveGateway id="G3" name="¿Decisión del jefe?"><bpmn:incoming>Flow_P_Nubia_13</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_14</bpmn:outgoing><bpmn:outgoing>Flow_P_Nubia_15</bpmn:outgoing><bpmn:outgoing>Flow_P_Nubia_16</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="G3b" name="¿Excede tope de política?"><bpmn:incoming>Flow_P_Nubia_16</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_17</bpmn:outgoing><bpmn:outgoing>Flow_P_Nubia_18</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:endEvent id="E3" name="Informe rechazado por jefe"><bpmn:incoming>Flow_P_Nubia_15</bpmn:incoming></bpmn:endEvent>
+<bpmn:userTask id="T10" name="Decidir gasto excedente"><bpmn:documentation>Autoriza el excedente o lo limita al tope; el sistema aplica el monto</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_18</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_19</bpmn:outgoing></bpmn:userTask>
+<bpmn:exclusiveGateway id="M2" name=""><bpmn:incoming>Flow_P_Nubia_8</bpmn:incoming><bpmn:incoming>Flow_P_Nubia_17</bpmn:incoming><bpmn:incoming>Flow_P_Nubia_19</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_20</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:serviceTask id="T06" name="Contabilizar informe en ERP"><bpmn:documentation>Integración REST con el ERP; crea el acreedor-empleado si no existe</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_20</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_21</bpmn:outgoing><bpmn:dataOutputAssociation id="T06_D3_out"><bpmn:targetRef>D3_ref</bpmn:targetRef></bpmn:dataOutputAssociation></bpmn:serviceTask>
+<bpmn:exclusiveGateway id="G4" name="¿Seleccionado para auditoría?"><bpmn:incoming>Flow_P_Nubia_21</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_22</bpmn:outgoing><bpmn:outgoing>Flow_P_Nubia_23</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:userTask id="T23" name="Auditar informe por muestreo"><bpmn:documentation>Muestra aleatoria ~10 % + informes con excedente autorizado</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_22</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_24</bpmn:outgoing><bpmn:dataInputAssociation id="T23_D2_in"><bpmn:sourceRef>D2_ref</bpmn:sourceRef></bpmn:dataInputAssociation></bpmn:userTask>
+<bpmn:exclusiveGateway id="M3" name=""><bpmn:incoming>Flow_P_Nubia_23</bpmn:incoming><bpmn:incoming>Flow_P_Nubia_24</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_25</bpmn:outgoing></bpmn:exclusiveGateway>
+<bpmn:intermediateCatchEvent id="IE2" name="Corrida semanal alcanzada"><bpmn:incoming>Flow_P_Nubia_25</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_26</bpmn:outgoing><bpmn:timerEventDefinition id="IE2_ed"/></bpmn:intermediateCatchEvent>
+<bpmn:serviceTask id="T15" name="Pagar reembolsos en corrida"><bpmn:documentation>Genera y envía el archivo de pagos; notifica al empleado</bpmn:documentation><bpmn:incoming>Flow_P_Nubia_26</bpmn:incoming><bpmn:outgoing>Flow_P_Nubia_27</bpmn:outgoing><bpmn:dataInputAssociation id="T15_D3_in"><bpmn:sourceRef>D3_ref</bpmn:sourceRef></bpmn:dataInputAssociation></bpmn:serviceTask>
+<bpmn:endEvent id="E1" name="Reembolso pagado"><bpmn:incoming>Flow_P_Nubia_27</bpmn:incoming></bpmn:endEvent>
+<bpmn:sequenceFlow id="Flow_P_Nubia_1" name="" sourceRef="S1" targetRef="M1"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_2" name="" sourceRef="M1" targetRef="T20"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_3" name="" sourceRef="T20" targetRef="T21"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_4" name="" sourceRef="T21" targetRef="G1"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_5" name="INCOMPLETO" sourceRef="G1" targetRef="M1"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_6" name="FUERA_DE_PLAZO" sourceRef="G1" targetRef="E2"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_7" name="VÁLIDO" sourceRef="G1" targetRef="G1b"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_8" name="no (AUTO: &lt; 1,000 MXN y en tope)" sourceRef="G1b" targetRef="M2"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_9" name="sí (JEFE)" sourceRef="G1b" targetRef="M5"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_10" name="" sourceRef="M5" targetRef="T03"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_11" name="" sourceRef="B1" targetRef="T22"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_12" name="" sourceRef="T22" targetRef="M5"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_13" name="" sourceRef="T03" targetRef="G3"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_14" name="requiere corrección" sourceRef="G3" targetRef="M1"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_15" name="rechazado" sourceRef="G3" targetRef="E3"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_16" name="aprobado" sourceRef="G3" targetRef="G3b"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_17" name="no" sourceRef="G3b" targetRef="M2"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_18" name="sí" sourceRef="G3b" targetRef="T10"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_19" name="" sourceRef="T10" targetRef="M2"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_20" name="" sourceRef="M2" targetRef="T06"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_21" name="" sourceRef="T06" targetRef="G4"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_22" name="sí" sourceRef="G4" targetRef="T23"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_23" name="no" sourceRef="G4" targetRef="M3"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_24" name="" sourceRef="T23" targetRef="M3"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_25" name="" sourceRef="M3" targetRef="IE2"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_26" name="" sourceRef="IE2" targetRef="T15"></bpmn:sequenceFlow>
+<bpmn:sequenceFlow id="Flow_P_Nubia_27" name="" sourceRef="T15" targetRef="E1"></bpmn:sequenceFlow>
+<bpmn:dataObject id="D1_obj"/>
+<bpmn:dataObjectReference id="D1_ref" name="Informe de gastos [electrónico]" dataObjectRef="D1_obj"/>
+<bpmn:dataObject id="D2_obj"/>
+<bpmn:dataObjectReference id="D2_ref" name="Comprobantes digitales" dataObjectRef="D2_obj"/>
+<bpmn:dataStoreReference id="D3_ref" name="ERP"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="Diagram_Process_reembolso_tobe"><bpmndi:BPMNPlane id="Plane_Process_reembolso_tobe" bpmnElement="Collab_Process_reembolso_tobe">
+<bpmndi:BPMNShape id="P_Nubia_di" bpmnElement="P_Nubia" isHorizontal="true"><dc:Bounds x="20" y="20" width="3180" height="990"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="L_emp_di" bpmnElement="L_emp" isHorizontal="true"><dc:Bounds x="50" y="20" width="3150" height="220"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="L_sis_di" bpmnElement="L_sis" isHorizontal="true"><dc:Bounds x="50" y="240" width="3150" height="335"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="L_jefe_di" bpmnElement="L_jefe" isHorizontal="true"><dc:Bounds x="50" y="575" width="3150" height="145"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="L_df_di" bpmnElement="L_df" isHorizontal="true"><dc:Bounds x="50" y="720" width="3150" height="145"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="L_cxp_di" bpmnElement="L_cxp" isHorizontal="true"><dc:Bounds x="50" y="865" width="3150" height="145"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="S1_di" bpmnElement="S1"><dc:Bounds x="122" y="144" width="36" height="36"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="M1_di" bpmnElement="M1" isMarkerVisible="true"><dc:Bounds x="275" y="137" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T20_di" bpmnElement="T20"><dc:Bounds x="410" y="122" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T21_di" bpmnElement="T21"><dc:Bounds x="570" y="342" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G1_di" bpmnElement="G1" isMarkerVisible="true"><dc:Bounds x="755" y="357" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G1b_di" bpmnElement="G1b" isMarkerVisible="true"><dc:Bounds x="915" y="357" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E2_di" bpmnElement="E2"><dc:Bounds x="922" y="479" width="36" height="36"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="M5_di" bpmnElement="M5" isMarkerVisible="true"><dc:Bounds x="1075" y="617" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T03_di" bpmnElement="T03"><dc:Bounds x="1210" y="602" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="B1_di" bpmnElement="B1"><dc:Bounds x="1280" y="664" width="36" height="36"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T22_di" bpmnElement="T22"><dc:Bounds x="1370" y="342" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G3_di" bpmnElement="G3" isMarkerVisible="true"><dc:Bounds x="1395" y="617" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G3b_di" bpmnElement="G3b" isMarkerVisible="true"><dc:Bounds x="1555" y="357" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E3_di" bpmnElement="E3"><dc:Bounds x="1562" y="624" width="36" height="36"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T10_di" bpmnElement="T10"><dc:Bounds x="1690" y="747" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="M2_di" bpmnElement="M2" isMarkerVisible="true"><dc:Bounds x="1875" y="357" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T06_di" bpmnElement="T06"><dc:Bounds x="2010" y="342" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="G4_di" bpmnElement="G4" isMarkerVisible="true"><dc:Bounds x="2195" y="357" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T23_di" bpmnElement="T23"><dc:Bounds x="2330" y="892" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="M3_di" bpmnElement="M3" isMarkerVisible="true"><dc:Bounds x="2515" y="357" width="50" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="IE2_di" bpmnElement="IE2"><dc:Bounds x="2682" y="364" width="36" height="36"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="T15_di" bpmnElement="T15"><dc:Bounds x="2810" y="342" width="100" height="80"/></bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="E1_di" bpmnElement="E1"><dc:Bounds x="3002" y="364" width="36" height="36"/></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_1_di" bpmnElement="Flow_P_Nubia_1"><di:waypoint x="158" y="162"/><di:waypoint x="275" y="162"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_2_di" bpmnElement="Flow_P_Nubia_2"><di:waypoint x="325" y="162"/><di:waypoint x="410" y="162"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_3_di" bpmnElement="Flow_P_Nubia_3"><di:waypoint x="510" y="162"/><di:waypoint x="540" y="162"/><di:waypoint x="540" y="382"/><di:waypoint x="570" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_4_di" bpmnElement="Flow_P_Nubia_4"><di:waypoint x="670" y="382"/><di:waypoint x="755" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_5_di" bpmnElement="Flow_P_Nubia_5"><di:waypoint x="780" y="407"/><di:waypoint x="780" y="432"/><di:waypoint x="300" y="432"/><di:waypoint x="300" y="187"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_6_di" bpmnElement="Flow_P_Nubia_6"><di:waypoint x="805" y="382"/><di:waypoint x="864" y="382"/><di:waypoint x="864" y="497"/><di:waypoint x="922" y="497"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_7_di" bpmnElement="Flow_P_Nubia_7"><di:waypoint x="805" y="382"/><di:waypoint x="915" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_8_di" bpmnElement="Flow_P_Nubia_8"><di:waypoint x="965" y="382"/><di:waypoint x="1875" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_9_di" bpmnElement="Flow_P_Nubia_9"><di:waypoint x="965" y="382"/><di:waypoint x="1020" y="382"/><di:waypoint x="1020" y="642"/><di:waypoint x="1075" y="642"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_10_di" bpmnElement="Flow_P_Nubia_10"><di:waypoint x="1125" y="642"/><di:waypoint x="1210" y="642"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_11_di" bpmnElement="Flow_P_Nubia_11"><di:waypoint x="1316" y="682"/><di:waypoint x="1343" y="682"/><di:waypoint x="1343" y="382"/><di:waypoint x="1370" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_12_di" bpmnElement="Flow_P_Nubia_12"><di:waypoint x="1420" y="422"/><di:waypoint x="1420" y="692"/><di:waypoint x="1100" y="692"/><di:waypoint x="1100" y="667"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_13_di" bpmnElement="Flow_P_Nubia_13"><di:waypoint x="1310" y="642"/><di:waypoint x="1395" y="642"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_14_di" bpmnElement="Flow_P_Nubia_14"><di:waypoint x="1420" y="667"/><di:waypoint x="1420" y="692"/><di:waypoint x="300" y="692"/><di:waypoint x="300" y="187"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_15_di" bpmnElement="Flow_P_Nubia_15"><di:waypoint x="1445" y="642"/><di:waypoint x="1562" y="642"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_16_di" bpmnElement="Flow_P_Nubia_16"><di:waypoint x="1445" y="642"/><di:waypoint x="1500" y="642"/><di:waypoint x="1500" y="382"/><di:waypoint x="1555" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_17_di" bpmnElement="Flow_P_Nubia_17"><di:waypoint x="1605" y="382"/><di:waypoint x="1875" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_18_di" bpmnElement="Flow_P_Nubia_18"><di:waypoint x="1605" y="382"/><di:waypoint x="1648" y="382"/><di:waypoint x="1648" y="787"/><di:waypoint x="1690" y="787"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_19_di" bpmnElement="Flow_P_Nubia_19"><di:waypoint x="1790" y="787"/><di:waypoint x="1832" y="787"/><di:waypoint x="1832" y="382"/><di:waypoint x="1875" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_20_di" bpmnElement="Flow_P_Nubia_20"><di:waypoint x="1925" y="382"/><di:waypoint x="2010" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_21_di" bpmnElement="Flow_P_Nubia_21"><di:waypoint x="2110" y="382"/><di:waypoint x="2195" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_22_di" bpmnElement="Flow_P_Nubia_22"><di:waypoint x="2245" y="382"/><di:waypoint x="2288" y="382"/><di:waypoint x="2288" y="932"/><di:waypoint x="2330" y="932"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_23_di" bpmnElement="Flow_P_Nubia_23"><di:waypoint x="2245" y="382"/><di:waypoint x="2515" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_24_di" bpmnElement="Flow_P_Nubia_24"><di:waypoint x="2430" y="932"/><di:waypoint x="2472" y="932"/><di:waypoint x="2472" y="382"/><di:waypoint x="2515" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_25_di" bpmnElement="Flow_P_Nubia_25"><di:waypoint x="2565" y="382"/><di:waypoint x="2682" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_26_di" bpmnElement="Flow_P_Nubia_26"><di:waypoint x="2718" y="382"/><di:waypoint x="2810" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="Flow_P_Nubia_27_di" bpmnElement="Flow_P_Nubia_27"><di:waypoint x="2910" y="382"/><di:waypoint x="3002" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNShape id="D1_ref_di" bpmnElement="D1_ref"><dc:Bounds x="480" y="30" width="36" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="T21_D1_in_di" bpmnElement="T21_D1_in"><di:waypoint x="498" y="55"/><di:waypoint x="620" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="T03_D1_in_di" bpmnElement="T03_D1_in"><di:waypoint x="498" y="55"/><di:waypoint x="1260" y="642"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="T20_D1_out_di" bpmnElement="T20_D1_out"><di:waypoint x="460" y="162"/><di:waypoint x="498" y="55"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNShape id="D2_ref_di" bpmnElement="D2_ref"><dc:Bounds x="525" y="30" width="36" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="T21_D2_in_di" bpmnElement="T21_D2_in"><di:waypoint x="543" y="55"/><di:waypoint x="620" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="T23_D2_in_di" bpmnElement="T23_D2_in"><di:waypoint x="543" y="55"/><di:waypoint x="2380" y="932"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="T20_D2_out_di" bpmnElement="T20_D2_out"><di:waypoint x="460" y="162"/><di:waypoint x="543" y="55"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNShape id="D3_ref_di" bpmnElement="D3_ref"><dc:Bounds x="2080" y="250" width="36" height="50"/></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="T15_D3_in_di" bpmnElement="T15_D3_in"><di:waypoint x="2098" y="275"/><di:waypoint x="2860" y="382"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="T06_D3_out_di" bpmnElement="T06_D3_out"><di:waypoint x="2060" y="382"/><di:waypoint x="2098" y="275"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNShape id="P_Banco_di" bpmnElement="P_Banco" isHorizontal="true"><dc:Bounds x="20" y="1040" width="3180" height="70"/></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="MsgFlow_1_di" bpmnElement="MsgFlow_1"><di:waypoint x="2860" y="422"/><di:waypoint x="2860" y="1040"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNShape id="A1_di" bpmnElement="A1"><dc:Bounds x="590" y="272" width="160" height="45"/></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="A1_as_di" bpmnElement="A1_as"><di:waypoint x="620" y="382"/><di:waypoint x="590" y="294"/></bpmndi:BPMNEdge>
+<bpmndi:BPMNShape id="A2_di" bpmnElement="A2"><dc:Bounds x="942" y="409" width="160" height="45"/></bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="A2_as_di" bpmnElement="A2_as"><di:waypoint x="940" y="497"/><di:waypoint x="942" y="431"/></bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

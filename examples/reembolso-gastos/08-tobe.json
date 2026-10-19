@@ -1,0 +1,370 @@
+{
+  "id": "Process_reembolso_tobe",
+  "name": "reembolso de gastos de viaje (to-be)",
+  "pools": [
+    {
+      "id": "P_Nubia",
+      "name": "Nubia SA",
+      "lanes": [
+        {
+          "id": "L_emp",
+          "name": "Empleado"
+        },
+        {
+          "id": "L_sis",
+          "name": "Sistema de gastos (BPMS)"
+        },
+        {
+          "id": "L_jefe",
+          "name": "Jefe inmediato"
+        },
+        {
+          "id": "L_df",
+          "name": "Director financiero"
+        },
+        {
+          "id": "L_cxp",
+          "name": "Cuentas por Pagar"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "S1",
+          "type": "startEvent",
+          "name": "Viaje concluido",
+          "lane": "L_emp"
+        },
+        {
+          "id": "M1",
+          "type": "exclusiveGateway",
+          "name": "",
+          "lane": "L_emp"
+        },
+        {
+          "id": "T20",
+          "type": "userTask",
+          "name": "Registrar gastos en portal",
+          "lane": "L_emp",
+          "doc": "Captura en origen: partidas + foto/CFDI de cada comprobante; validaciones en línea"
+        },
+        {
+          "id": "T21",
+          "type": "businessRuleTask",
+          "name": "Validar informe contra política",
+          "lane": "L_sis",
+          "doc": "DMN 'Ruta del informe' + 'Tope por partida' (09-implementacion.md)"
+        },
+        {
+          "id": "G1",
+          "type": "exclusiveGateway",
+          "name": "¿Informe válido?",
+          "lane": "L_sis"
+        },
+        {
+          "id": "G1b",
+          "type": "exclusiveGateway",
+          "name": "¿Requiere aprobación del jefe?",
+          "lane": "L_sis"
+        },
+        {
+          "id": "E2",
+          "type": "endEvent",
+          "name": "Informe rechazado por plazo",
+          "lane": "L_sis"
+        },
+        {
+          "id": "M5",
+          "type": "exclusiveGateway",
+          "name": "",
+          "lane": "L_jefe"
+        },
+        {
+          "id": "T03",
+          "type": "userTask",
+          "name": "Aprobar informe de gastos",
+          "lane": "L_jefe",
+          "doc": "Worklist/móvil; SLA 48 h hábiles"
+        },
+        {
+          "id": "B1",
+          "type": "boundaryEvent",
+          "attachedTo": "T03",
+          "event": "timer",
+          "interrupting": true,
+          "name": "48 h hábiles sin decisión",
+          "lane": "L_jefe"
+        },
+        {
+          "id": "T22",
+          "type": "sendTask",
+          "name": "Escalar aprobación al gerente",
+          "lane": "L_sis",
+          "doc": "Reasigna el work item al jefe del aprobador y notifica (patrón escalado)"
+        },
+        {
+          "id": "G3",
+          "type": "exclusiveGateway",
+          "name": "¿Decisión del jefe?",
+          "lane": "L_jefe"
+        },
+        {
+          "id": "G3b",
+          "type": "exclusiveGateway",
+          "name": "¿Excede tope de política?",
+          "lane": "L_sis"
+        },
+        {
+          "id": "E3",
+          "type": "endEvent",
+          "name": "Informe rechazado por jefe",
+          "lane": "L_jefe"
+        },
+        {
+          "id": "T10",
+          "type": "userTask",
+          "name": "Decidir gasto excedente",
+          "lane": "L_df",
+          "doc": "Autoriza el excedente o lo limita al tope; el sistema aplica el monto"
+        },
+        {
+          "id": "M2",
+          "type": "exclusiveGateway",
+          "name": "",
+          "lane": "L_sis"
+        },
+        {
+          "id": "T06",
+          "type": "serviceTask",
+          "name": "Contabilizar informe en ERP",
+          "lane": "L_sis",
+          "doc": "Integración REST con el ERP; crea el acreedor-empleado si no existe"
+        },
+        {
+          "id": "G4",
+          "type": "exclusiveGateway",
+          "name": "¿Seleccionado para auditoría?",
+          "lane": "L_sis"
+        },
+        {
+          "id": "T23",
+          "type": "userTask",
+          "name": "Auditar informe por muestreo",
+          "lane": "L_cxp",
+          "doc": "Muestra aleatoria ~10 % + informes con excedente autorizado"
+        },
+        {
+          "id": "M3",
+          "type": "exclusiveGateway",
+          "name": "",
+          "lane": "L_sis"
+        },
+        {
+          "id": "IE2",
+          "type": "intermediateCatchEvent",
+          "event": "timer",
+          "name": "Corrida semanal alcanzada",
+          "lane": "L_sis"
+        },
+        {
+          "id": "T15",
+          "type": "serviceTask",
+          "name": "Pagar reembolsos en corrida",
+          "lane": "L_sis",
+          "doc": "Genera y envía el archivo de pagos; notifica al empleado"
+        },
+        {
+          "id": "E1",
+          "type": "endEvent",
+          "name": "Reembolso pagado",
+          "lane": "L_sis"
+        }
+      ],
+      "flows": [
+        {
+          "from": "S1",
+          "to": "M1"
+        },
+        {
+          "from": "M1",
+          "to": "T20"
+        },
+        {
+          "from": "T20",
+          "to": "T21"
+        },
+        {
+          "from": "T21",
+          "to": "G1"
+        },
+        {
+          "from": "G1",
+          "to": "M1",
+          "name": "INCOMPLETO"
+        },
+        {
+          "from": "G1",
+          "to": "E2",
+          "name": "FUERA_DE_PLAZO"
+        },
+        {
+          "from": "G1",
+          "to": "G1b",
+          "name": "VÁLIDO"
+        },
+        {
+          "from": "G1b",
+          "to": "M2",
+          "name": "no (AUTO: < 1,000 MXN y en tope)"
+        },
+        {
+          "from": "G1b",
+          "to": "M5",
+          "name": "sí (JEFE)"
+        },
+        {
+          "from": "M5",
+          "to": "T03"
+        },
+        {
+          "from": "B1",
+          "to": "T22"
+        },
+        {
+          "from": "T22",
+          "to": "M5"
+        },
+        {
+          "from": "T03",
+          "to": "G3"
+        },
+        {
+          "from": "G3",
+          "to": "M1",
+          "name": "requiere corrección"
+        },
+        {
+          "from": "G3",
+          "to": "E3",
+          "name": "rechazado"
+        },
+        {
+          "from": "G3",
+          "to": "G3b",
+          "name": "aprobado"
+        },
+        {
+          "from": "G3b",
+          "to": "M2",
+          "name": "no"
+        },
+        {
+          "from": "G3b",
+          "to": "T10",
+          "name": "sí"
+        },
+        {
+          "from": "T10",
+          "to": "M2"
+        },
+        {
+          "from": "M2",
+          "to": "T06"
+        },
+        {
+          "from": "T06",
+          "to": "G4"
+        },
+        {
+          "from": "G4",
+          "to": "T23",
+          "name": "sí"
+        },
+        {
+          "from": "G4",
+          "to": "M3",
+          "name": "no"
+        },
+        {
+          "from": "T23",
+          "to": "M3"
+        },
+        {
+          "from": "M3",
+          "to": "IE2"
+        },
+        {
+          "from": "IE2",
+          "to": "T15"
+        },
+        {
+          "from": "T15",
+          "to": "E1"
+        }
+      ]
+    },
+    {
+      "id": "P_Banco",
+      "name": "Banco",
+      "blackbox": true
+    }
+  ],
+  "messages": [
+    {
+      "from": "T15",
+      "to": "P_Banco",
+      "name": "Archivo de pagos"
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "type": "dataObject",
+      "name": "Informe de gastos [electrónico]",
+      "pool": "P_Nubia",
+      "inputs": [
+        "T21",
+        "T03"
+      ],
+      "outputs": [
+        "T20"
+      ]
+    },
+    {
+      "id": "D2",
+      "type": "dataObject",
+      "name": "Comprobantes digitales",
+      "pool": "P_Nubia",
+      "inputs": [
+        "T21",
+        "T23"
+      ],
+      "outputs": [
+        "T20"
+      ]
+    },
+    {
+      "id": "D3",
+      "type": "dataStore",
+      "name": "ERP",
+      "pool": "P_Nubia",
+      "inputs": [
+        "T15"
+      ],
+      "outputs": [
+        "T06"
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "id": "A1",
+      "text": "DMN: ruta = INCOMPLETO | FUERA_DE_PLAZO | AUTO | JEFE (hit U, completa C)",
+      "attachedTo": "T21"
+    },
+    {
+      "id": "A2",
+      "text": "Rechazo por plazo solo si > 30 días (política v2019) [A VALIDAR vigencia]",
+      "attachedTo": "E2"
+    }
+  ]
+}

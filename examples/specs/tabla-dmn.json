@@ -1,0 +1,5 @@
+{"name":"Grado de préstamo","hit":"U","completeness":"C",
+ "inputs":[{"name":"ingreso","type":"number","domain":[0,10000]},{"name":"monto","type":"number","domain":[0,10000]}],
+ "rules":[{"id":"A","when":{"ingreso":"[0..2000]","monto":"[0..3000]"},"then":{"grade":"G"}},
+          {"id":"B","when":{"ingreso":"[1000..3000]","monto":"[2000..5000]"},"then":{"grade":"F"}},
+          {"id":"C","when":{"ingreso":"[4000..6000]","monto":"[7000..9000]"},"then":{"grade":"P"}}]}

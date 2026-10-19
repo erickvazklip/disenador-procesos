@@ -1,0 +1,420 @@
+{
+  "id": "Process_reembolso_asis",
+  "name": "reembolso de gastos de viaje (as-is)",
+  "pools": [
+    {
+      "id": "P_Nubia",
+      "name": "Nubia SA",
+      "lanes": [
+        {
+          "id": "L_emp",
+          "name": "Empleado"
+        },
+        {
+          "id": "L_jefe",
+          "name": "Jefe inmediato"
+        },
+        {
+          "id": "L_cxp",
+          "name": "Cuentas por Pagar"
+        },
+        {
+          "id": "L_df",
+          "name": "Director financiero"
+        },
+        {
+          "id": "L_ti",
+          "name": "TI"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "S1",
+          "type": "startEvent",
+          "name": "Viaje concluido",
+          "lane": "L_emp"
+        },
+        {
+          "id": "M1",
+          "type": "exclusiveGateway",
+          "name": "",
+          "lane": "L_emp"
+        },
+        {
+          "id": "T01",
+          "type": "manualTask",
+          "name": "Preparar informe de gastos",
+          "lane": "L_emp",
+          "doc": "Llena el formato Excel y escanea los tickets (IN-01)"
+        },
+        {
+          "id": "T02",
+          "type": "sendTask",
+          "name": "Enviar informe al jefe",
+          "lane": "L_emp",
+          "doc": "Por correo electrónico (IN-01)"
+        },
+        {
+          "id": "IE1",
+          "type": "intermediateCatchEvent",
+          "event": "timer",
+          "name": "Viernes de revisión alcanzado",
+          "lane": "L_jefe",
+          "doc": "Revisión en bloque los viernes (IN-02)"
+        },
+        {
+          "id": "T03",
+          "type": "userTask",
+          "name": "Revisar informe de gastos",
+          "lane": "L_jefe",
+          "doc": "Montos razonables y tickets presentes (IN-02)"
+        },
+        {
+          "id": "G1",
+          "type": "exclusiveGateway",
+          "name": "¿Informe completo y razonable?",
+          "lane": "L_jefe"
+        },
+        {
+          "id": "T04",
+          "type": "sendTask",
+          "name": "Devolver informe con observaciones",
+          "lane": "L_jefe",
+          "doc": "Falta de ticket u otra observación (IN-01)"
+        },
+        {
+          "id": "T05",
+          "type": "sendTask",
+          "name": "Aprobar informe por correo",
+          "lane": "L_jefe",
+          "doc": "Responde el correo y lo reenvía a CxP (IN-02)"
+        },
+        {
+          "id": "T06",
+          "type": "userTask",
+          "name": "Capturar informe en ERP",
+          "lane": "L_cxp",
+          "doc": "10 min por informe (IN-03)"
+        },
+        {
+          "id": "T07",
+          "type": "userTask",
+          "name": "Verificar política de gastos",
+          "lane": "L_cxp",
+          "doc": "Completitud, plazo 30 días, topes hospedaje 1,800/noche y comidas 600/día (IN-03, IN-04)"
+        },
+        {
+          "id": "G2",
+          "type": "exclusiveGateway",
+          "name": "¿Informe completo y en plazo?",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "G2b",
+          "type": "exclusiveGateway",
+          "name": "¿Excede tope de política?",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "T08",
+          "type": "sendTask",
+          "name": "Devolver informe incompleto",
+          "lane": "L_cxp",
+          "doc": "~15 % de los informes (IN-03)"
+        },
+        {
+          "id": "E2",
+          "type": "endEvent",
+          "name": "Informe rechazado por plazo",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "T09",
+          "type": "sendTask",
+          "name": "Solicitar autorización de excedente",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "T10",
+          "type": "userTask",
+          "name": "Decidir gasto excedente",
+          "lane": "L_df"
+        },
+        {
+          "id": "G3",
+          "type": "exclusiveGateway",
+          "name": "¿Excedente autorizado?",
+          "lane": "L_df"
+        },
+        {
+          "id": "T11",
+          "type": "userTask",
+          "name": "Ajustar monto al tope",
+          "lane": "L_cxp",
+          "doc": "[SUPUESTO] si el DF no autoriza, se reembolsa hasta el tope"
+        },
+        {
+          "id": "M3",
+          "type": "exclusiveGateway",
+          "name": "",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "T12",
+          "type": "userTask",
+          "name": "Verificar cuenta de proveedor",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "G4",
+          "type": "exclusiveGateway",
+          "name": "¿Empleado tiene cuenta de proveedor?",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "T13",
+          "type": "sendTask",
+          "name": "Solicitar alta de proveedor",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "T14",
+          "type": "userTask",
+          "name": "Dar de alta proveedor",
+          "lane": "L_ti",
+          "doc": "Tarda ~2 días (IN-03)"
+        },
+        {
+          "id": "M4",
+          "type": "exclusiveGateway",
+          "name": "",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "IE2",
+          "type": "intermediateCatchEvent",
+          "event": "timer",
+          "name": "Corrida quincenal alcanzada",
+          "lane": "L_cxp",
+          "doc": "Pagos en corrida quincenal (IN-03)"
+        },
+        {
+          "id": "T15",
+          "type": "userTask",
+          "name": "Pagar reembolsos en corrida",
+          "lane": "L_cxp"
+        },
+        {
+          "id": "E1",
+          "type": "endEvent",
+          "name": "Reembolso pagado",
+          "lane": "L_cxp"
+        }
+      ],
+      "flows": [
+        {
+          "from": "S1",
+          "to": "M1"
+        },
+        {
+          "from": "M1",
+          "to": "T01"
+        },
+        {
+          "from": "T01",
+          "to": "T02"
+        },
+        {
+          "from": "T02",
+          "to": "IE1"
+        },
+        {
+          "from": "IE1",
+          "to": "T03"
+        },
+        {
+          "from": "T03",
+          "to": "G1"
+        },
+        {
+          "from": "G1",
+          "to": "T04",
+          "name": "no (falta ticket o monto dudoso)"
+        },
+        {
+          "from": "G1",
+          "to": "T05",
+          "name": "sí"
+        },
+        {
+          "from": "T04",
+          "to": "M1"
+        },
+        {
+          "from": "T05",
+          "to": "T06"
+        },
+        {
+          "from": "T06",
+          "to": "T07"
+        },
+        {
+          "from": "T07",
+          "to": "G2"
+        },
+        {
+          "from": "G2",
+          "to": "T08",
+          "name": "incompleto"
+        },
+        {
+          "from": "G2",
+          "to": "E2",
+          "name": "entregado > 30 días tras el viaje"
+        },
+        {
+          "from": "G2",
+          "to": "G2b",
+          "name": "completo y en plazo"
+        },
+        {
+          "from": "G2b",
+          "to": "T09",
+          "name": "sí"
+        },
+        {
+          "from": "G2b",
+          "to": "M3",
+          "name": "no"
+        },
+        {
+          "from": "T08",
+          "to": "M1"
+        },
+        {
+          "from": "T09",
+          "to": "T10"
+        },
+        {
+          "from": "T10",
+          "to": "G3"
+        },
+        {
+          "from": "G3",
+          "to": "M3",
+          "name": "autorizado"
+        },
+        {
+          "from": "G3",
+          "to": "T11",
+          "name": "no autorizado"
+        },
+        {
+          "from": "T11",
+          "to": "M3"
+        },
+        {
+          "from": "M3",
+          "to": "T12"
+        },
+        {
+          "from": "T12",
+          "to": "G4"
+        },
+        {
+          "from": "G4",
+          "to": "M4",
+          "name": "sí"
+        },
+        {
+          "from": "G4",
+          "to": "T13",
+          "name": "no"
+        },
+        {
+          "from": "T13",
+          "to": "T14"
+        },
+        {
+          "from": "T14",
+          "to": "M4"
+        },
+        {
+          "from": "M4",
+          "to": "IE2"
+        },
+        {
+          "from": "IE2",
+          "to": "T15"
+        },
+        {
+          "from": "T15",
+          "to": "E1"
+        }
+      ]
+    },
+    {
+      "id": "P_Banco",
+      "name": "Banco",
+      "blackbox": true
+    }
+  ],
+  "messages": [
+    {
+      "from": "T15",
+      "to": "P_Banco",
+      "name": "Archivo de pagos"
+    }
+  ],
+  "data": [
+    {
+      "id": "D1",
+      "type": "dataObject",
+      "name": "Informe de gastos [Excel]",
+      "pool": "P_Nubia",
+      "inputs": [
+        "T03"
+      ],
+      "outputs": [
+        "T01"
+      ]
+    },
+    {
+      "id": "D2",
+      "type": "dataObject",
+      "name": "Tickets escaneados",
+      "pool": "P_Nubia",
+      "inputs": [
+        "T03"
+      ],
+      "outputs": [
+        "T01"
+      ]
+    },
+    {
+      "id": "D3",
+      "type": "dataStore",
+      "name": "ERP",
+      "pool": "P_Nubia",
+      "inputs": [
+        "T12"
+      ],
+      "outputs": [
+        "T06",
+        "T14"
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "id": "A1",
+      "text": "Política v2019: < 1,000 MXN se aprueba sin revisión del jefe — no se aplica en la práctica (IN-02 vs IN-04)",
+      "attachedTo": "T03"
+    },
+    {
+      "id": "A2",
+      "text": "Topes: hospedaje 1,800 MXN/noche; comidas 600 MXN/día (IN-03)",
+      "attachedTo": "T07"
+    }
+  ]
+}
